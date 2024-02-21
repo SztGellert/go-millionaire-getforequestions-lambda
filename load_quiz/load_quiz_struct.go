@@ -12,5 +12,5 @@ type Question struct {
 type QuestionDetails struct {
 	Text         string   `bson:"text" json:"text"`
 	Answers      []string `bson:"answers" json:"answers"`
-	CorrectOrder int32    `bson:"correct_order" json:"correct_order"`
+	CorrectOrder string   `bson:"correct_order" json:"correct_order"`
 }

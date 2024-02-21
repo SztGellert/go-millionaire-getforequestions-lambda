@@ -2,52 +2,57 @@ package load_quiz
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"log"
+	"os"
 	"time"
 )
 
 func ConnectMongo() {
 
+	mongoUser := os.Getenv("MONGODB_USER")
+	mongoPassword := os.Getenv("MONGODB_PASSWORD")
+
 	// test db with private network access
 	credential := options.Credential{
-		Username: "admin",
-		Password: "admin",
+		Username: mongoUser,
+		Password: mongoPassword,
 	}
+	mongoURI := os.Getenv("MONGODB_URI")
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://172.31.21.185:27017").SetAuth(credential))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoURI).SetAuth(credential))
 	if err != nil {
-		fmt.Println(err.Error())
-		log.Println(err)
 		panic(err)
 	}
 
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		fmt.Println(err.Error())
-		log.Println(err)
 		panic(err)
 	}
 }
 
 func LoadQuestion() ([]Question, error) {
 
+	mongoUser := os.Getenv("MONGODB_USER")
+	mongoPassword := os.Getenv("MONGODB_PASSWORD")
+
+	// test db with private network access
 	credential := options.Credential{
-		Username: "admin",
-		Password: "admin",
+		Username: mongoUser,
+		Password: mongoPassword,
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
-	mongourl := "mongodb://172.31.21.185:27017"
+	mongoURI := os.Getenv("MONGODB_URI")
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongourl).SetAuth(credential))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI).SetAuth(credential))
 	if err != nil {
 		return nil, err
 	}
 
-	foreQuestionsCollection := client.Database("quiz").Collection("fore_questions")
+	mongoDatabase := os.Getenv("MONGODB_DATABASE")
+	mongoCollection := os.Getenv("MONGODB_COLLECTION")
+	foreQuestionsCollection := client.Database(mongoDatabase).Collection(mongoCollection)
 	var foreQuestions []Question
 
 	sampleStage := bson.D{{"$sample", bson.D{{"size", 1}}}}
